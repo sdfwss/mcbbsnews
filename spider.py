@@ -10,9 +10,9 @@ headers = {
 base_url = "https://www.mcbbs.net/"
 
 try:
-    csvfile = open("data.csv","r",newline='',encoding="utf-8-sig")
+    csvfile = open("data.csv","r+",newline='',encoding="utf-8")
 except FileNotFoundError:
-    csvfile = open("data.csv","w+",newline='',encoding="utf-8-sig")
+    csvfile = open("data.csv","w+",newline='',encoding="utf-8")
 reader = csv.reader(csvfile)
 
 thread_id_old = [row[0] for row in reader]
@@ -27,8 +27,6 @@ for i in list:
     type = i.tr.th.em.text.strip("[]")
     title = i.tr.th.find("a", class_="s xst").text
     url = base_url + i.tr.th.find("a", class_="s xst")["href"]
-    #writer.writerow([thread_id,type,title,url])
-    #print(thread_id + "> " + type + " " + title + "\n" + url)
     data[thread_id]=[type,title,url]
 
 data_new = []
@@ -37,10 +35,9 @@ for key in data.keys():
     data_new.append(key)
 
 if data_new != []:
-    csvfile = open("data.csv","a",newline='',encoding="utf-8-sig")
     writer = csv.writer(csvfile)
     data_new.reverse() 
     for i in data_new:
-        writer.writerow([i,data[i]])
+        writer.writerow([i]+data[i])
 
 csvfile.close()
