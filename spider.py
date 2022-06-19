@@ -12,7 +12,7 @@ base_url = "https://www.mcbbs.net/"
 try:
     csvfile = open("data.csv","r",newline='',encoding="utf-8-sig")
 except FileNotFoundError:
-    csvfile = open("data.csv","w",newline='',encoding="utf-8-sig")
+    csvfile = open("data.csv","w+",newline='',encoding="utf-8-sig")
 reader = csv.reader(csvfile)
 
 thread_id_old = [row[0] for row in reader]
