@@ -1,6 +1,7 @@
 import requests
 import re
 import csv
+import configparser
 from bs4 import BeautifulSoup
 
 headers = {
@@ -24,17 +25,33 @@ def get_data():
     return data
 
 
+def send_msg_tg(text):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    if config["tg"].getboolean("send_msg"):
+        params = {
+            "chat_id": config["tg"]["chat_id"],
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }
+        requests.get(
+            "https://api.telegram.org/bot%s/sendMessage" % (config["tg"]["bot_token"]),
+            params=params,
+        )
+
+
 def main():
     try:
         csvfile = open("data.csv", "r+", newline="", encoding="utf-8")
     except FileNotFoundError:
         csvfile = open("data.csv", "w+", newline="", encoding="utf-8")
     reader = csv.reader(csvfile)
-    
+
     thread_id_old = [row[0] for row in reader]
     data = get_data()
     data_new = []
-    
+
     for thread_id in data.keys():
         if thread_id in thread_id_old:
             break
@@ -44,6 +61,7 @@ def main():
         writer = csv.writer(csvfile)
         data_new.reverse()
         for i in data_new:
+            send_msg_tg("[#%s] <b>%s</b>\n%s" % (data[i][0], data[i][1], data[i][2]))
             writer.writerow([i] + data[i])
 
     csvfile.close()
