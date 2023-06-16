@@ -28,6 +28,7 @@ def get_data():
 def send_msg_tg(text):
     config = configparser.ConfigParser()
     config.read("config.ini")
+    api_url = config["tg"]["api_url"]
     if config["tg"].getboolean("send_msg"):
         params = {
             "chat_id": config["tg"]["chat_id"],
@@ -35,8 +36,8 @@ def send_msg_tg(text):
             "parse_mode": "HTML",
             "disable_web_page_preview": True,
         }
-        requests.get(
-            "https://api.telegram.org/bot%s/sendMessage" % (config["tg"]["bot_token"]),
+        requests.post(
+            "https://" + api_url + "/bot%s/sendMessage" % (config["tg"]["bot_token"]),
             params=params,
         )
 
