@@ -2,6 +2,8 @@ import requests
 import re
 import csv
 import configparser
+import urllib.parse
+import urllib.request
 from bs4 import BeautifulSoup
 
 headers = {
@@ -24,22 +26,13 @@ def get_data():
         data[thread_id] = [type, title, url]
     return data
 
-
-def send_msg_tg(text):
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-    api_url = config["tg"]["api_url"]
-    if config["tg"].getboolean("send_msg"):
-        params = {
-            "chat_id": config["tg"]["chat_id"],
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": True,
-        }
-        requests.post(
-            "https://" + api_url + "/bot%s/sendMessage" % (config["tg"]["bot_token"]),
-            params=params,
-        )
+def sc_send(api_url, text, desp='', key='[SENDKEY]'):
+    postdata = urllib.parse.urlencode({'text': text, 'desp': desp}).encode('utf-8')
+    headers = {'Content-type': 'application/x-www-form-urlencoded'}
+    request = urllib.request.Request(api_url + key + '.send', data=postdata, headers=headers)
+    response = urllib.request.urlopen(request)
+    result = response.read().decode('utf-8')
+    return result
 
 
 def main():
@@ -61,10 +54,16 @@ def main():
     if data_new != []:
         writer = csv.writer(csvfile)
         data_new.reverse()
+        tmp=""
         for i in data_new:
-            send_msg_tg("[#%s] <b>%s</b>\n%s" % (data[i][0], data[i][1], data[i][2]))
+            tmp+="**%s** [%s](%s)  \n" % (data[i][0], data[i][1], data[i][2])
             writer.writerow([i] + data[i])
-
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        api_url = config["sct"]["api_url"]
+        print(config["sct"].getboolean("send_msg"))
+        if config["sct"].getboolean("send_msg"):
+            print(sc_send(api_url,"MCBBS幻翼块讯",tmp,config["sct"]["sendkey"]))
     csvfile.close()
 
 
